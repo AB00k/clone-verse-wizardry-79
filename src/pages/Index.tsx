@@ -1,63 +1,46 @@
+import React from "react";
+import { Link } from "react-router-dom";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import StatCard from "@/components/StatCard";
+import SpendingChart from "@/components/SpendingChart";
+import BudgetProgressBar from "@/components/BudgetProgressBar";
+import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink, navigationMenuTriggerStyle } from "@/components/ui/navigation-menu"
+import { Calendar, CalendarClock } from "lucide-react";
 
-import React, { useEffect, useState } from 'react';
-import { Tag, DollarSign, ShoppingCart, PercentIcon, BarChart, Activity, ShoppingBag } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import StatCard from '@/components/StatCard';
-import BudgetProgressBar from '@/components/BudgetProgressBar';
-import SpendingChart from '@/components/SpendingChart';
-
-// Mock data for the spending chart
-const generateChartData = () => {
-  const data = [];
-  for (let i = 1; i <= 30; i++) {
-    // Generate a simulated spending amount with a general upward trend
-    const base = 1800 + i * 30;
-    const random = Math.random() * 300 - 150;
-    const amount = Math.max(1500, base + random);
-    
-    data.push({
-      name: i.toString(),
-      amount: Math.round(amount)
-    });
-  }
-  return data;
-};
-
-const Index = () => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [chartData, setChartData] = useState(generateChartData());
-  
-  useEffect(() => {
-    // Simulate data loading
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 800);
-    
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse flex flex-col items-center">
-          <div className="w-16 h-16 rounded-full bg-gray-200 mb-4"></div>
-          <div className="h-4 w-32 bg-gray-200 rounded"></div>
+export default function Index() {
+  return (
+    <div className="flex min-h-screen flex-col">
+      <div className="border-b">
+        <div className="flex h-16 items-center justify-between px-4">
+          <div className="flex items-center gap-6 text-lg font-medium">
+            Delivery Discount Performance
+          </div>
+          <NavigationMenu>
+            <NavigationMenuList>
+              <NavigationMenuItem>
+                <Link to="/" legacyBehavior passHref>
+                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                    Dashboard
+                  </NavigationMenuLink>
+                </Link>
+              </NavigationMenuItem>
+              <NavigationMenuItem>
+                <Link to="/promotions" legacyBehavior passHref>
+                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                    <CalendarClock className="mr-2 h-4 w-4" />
+                    Promotions
+                  </NavigationMenuLink>
+                </Link>
+              </NavigationMenuItem>
+            </NavigationMenuList>
+          </NavigationMenu>
         </div>
       </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-50 animate-fade-in">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        <header className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-red-500">Delivery Discount Performance</h1>
-          <Button className="bg-red-500 hover:bg-red-600 text-white font-medium rounded-full px-6 py-2 flex items-center gap-2 transition-all duration-300">
-            <span className="text-xl">+</span> Create a new campaign
-          </Button>
-        </header>
+      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+        </div>
 
         <div className="mb-8">
           <div className="flex justify-between items-center mb-4">
@@ -204,6 +187,4 @@ const Index = () => {
       </div>
     </div>
   );
-};
-
-export default Index;
+}
