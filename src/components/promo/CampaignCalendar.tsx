@@ -6,17 +6,20 @@ import { cn } from "@/lib/utils";
 import { Campaign } from "@/types/campaign";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CalendarPlus, CalendarCheck, CalendarX } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface CampaignCalendarProps {
   campaigns: Campaign[];
   currentDate: Date;
   view: "month" | "week";
+  selectedFilter: string[];
 }
 
 const CampaignCalendar: React.FC<CampaignCalendarProps> = ({ 
   campaigns, 
   currentDate, 
-  view 
+  view,
+  selectedFilter
 }) => {
   const getCalendarDays = () => {
     if (view === "month") {
@@ -50,8 +53,13 @@ const CampaignCalendar: React.FC<CampaignCalendarProps> = ({
 
   const getCampaignsForDay = (day: Date) => {
     return campaigns.filter(campaign => 
-      isWithinInterval(day, { start: campaign.startDate, end: campaign.endDate })
+      isWithinInterval(day, { start: campaign.startDate, end: campaign.endDate }) &&
+      (selectedFilter.length === 0 || selectedFilter.includes(campaign.status))
     );
+  };
+
+  const isPastDay = (day: Date) => {
+    return isBefore(day, new Date()) && !isToday(day);
   };
 
   const getStatusIcon = (status: string) => {
@@ -61,7 +69,7 @@ const CampaignCalendar: React.FC<CampaignCalendarProps> = ({
       case "live":
         return <CalendarCheck className="h-3 w-3 text-green-500" />;
       case "completed":
-        return <CalendarX className="h-3 w-3 text-red-500" />;
+        return <CalendarX className="h-3 w-3 text-purple-500" />;
       default:
         return null;
     }
@@ -80,15 +88,17 @@ const CampaignCalendar: React.FC<CampaignCalendarProps> = ({
         {days.map((day) => {
           const dayCampaigns = getCampaignsForDay(day);
           const isCurrentMonth = view === "month" ? isSameMonth(day, currentDate) : true;
+          const isPast = isPastDay(day);
           
           return (
             <div
               key={day.toString()}
               className={cn(
-                "min-h-24 p-2 border rounded-md",
+                "min-h-16 p-2 border rounded-md",
                 !isCurrentMonth && "bg-muted/50",
+                isPast && "bg-gray-100 dark:bg-slate-800/40",
                 isToday(day) && "bg-blue-50/60 dark:bg-blue-950/20",
-                view === "week" && "h-40"
+                view === "week" && "h-32"
               )}
             >
               <div className="flex justify-between items-start mb-1">
@@ -106,45 +116,36 @@ const CampaignCalendar: React.FC<CampaignCalendarProps> = ({
                 </span>
               </div>
               
-              <div className="space-y-1 mt-1 overflow-y-auto max-h-20">
+              {dayCampaigns.length > 0 && (
                 <TooltipProvider>
-                  {dayCampaigns.slice(0, 3).map((campaign) => (
-                    <Tooltip key={campaign.id}>
-                      <TooltipTrigger asChild>
-                        <div
-                          className="text-xs px-1.5 py-0.5 rounded-sm flex items-center gap-1 truncate cursor-pointer"
-                          style={{ backgroundColor: `${campaign.color}20`, borderLeft: `3px solid ${campaign.color}` }}
-                        >
-                          {getStatusIcon(campaign.status)}
-                          <span className="truncate">{campaign.title}</span>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center gap-1 mt-1 cursor-pointer">
+                        <Badge variant="outline" className="text-xs h-5 px-1.5">
+                          {dayCampaigns.length} {dayCampaigns.length === 1 ? 'promo' : 'promos'}
+                        </Badge>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent className="p-0 overflow-hidden">
+                      <div className="max-w-xs p-2 space-y-2">
+                        <p className="font-medium text-sm border-b pb-1">{format(day, "MMMM d, yyyy")}</p>
+                        <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                          {dayCampaigns.map((campaign) => (
+                            <div key={campaign.id} className="text-sm">
+                              <div className="flex items-center gap-1">
+                                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: campaign.color }}></span>
+                                <span className="font-medium">{campaign.title}</span>
+                                <span className="ml-auto text-xs capitalize">{campaign.status}</span>
+                              </div>
+                              <p className="text-xs ml-3 opacity-80">{campaign.description}</p>
+                            </div>
+                          ))}
                         </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <div className="space-y-1">
-                          <p className="font-medium">{campaign.title}</p>
-                          <p className="text-xs">{campaign.description}</p>
-                          <p className="text-xs opacity-80">
-                            {format(campaign.startDate, "MMM d")} - {format(campaign.endDate, "MMM d, yyyy")}
-                          </p>
-                          <div className="flex items-center gap-1 text-xs">
-                            <span
-                              className="w-2 h-2 rounded-full"
-                              style={{ backgroundColor: campaign.color }}
-                            ></span>
-                            <span className="capitalize">{campaign.status}</span>
-                          </div>
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  ))}
-                  
-                  {dayCampaigns.length > 3 && (
-                    <div className="text-xs text-center text-muted-foreground">
-                      +{dayCampaigns.length - 3} more
-                    </div>
-                  )}
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
                 </TooltipProvider>
-              </div>
+              )}
             </div>
           );
         })}

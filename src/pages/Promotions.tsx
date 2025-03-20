@@ -1,11 +1,12 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { 
   Calendar as CalendarIcon, 
   ChevronLeft, 
@@ -13,18 +14,36 @@ import {
   Calendar as CalendarCheckIcon, 
   CalendarPlus, 
   CalendarX,
-  List
+  List,
+  Filter
 } from "lucide-react";
 import { format, addMonths, subMonths, startOfWeek, endOfWeek, addWeeks, subWeeks, isWithinInterval } from "date-fns";
 import CampaignCalendar from "@/components/promo/CampaignCalendar";
 import CampaignList from "@/components/promo/CampaignList";
 import { Campaign, CampaignStatus } from "@/types/campaign";
+import { 
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Promotions = () => {
   const [viewType, setViewType] = useState<"calendar" | "list">("calendar");
   const [calendarView, setCalendarView] = useState<"month" | "week">("month");
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [filterStatus, setFilterStatus] = useState<CampaignStatus | "all">("all");
+  const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
+
+  // Stats for the campaign summary
+  const [stats, setStats] = useState({
+    live: 0,
+    planned: 0,
+    completed: 0,
+    total: 0
+  });
 
   // Sample campaign data with various statuses and timeframes
   const [campaigns, setCampaigns] = useState<Campaign[]>([
@@ -107,6 +126,20 @@ const Promotions = () => {
     }
   ]);
 
+  // Calculate campaign stats
+  useEffect(() => {
+    const filteredCampaigns = getFilteredCampaigns();
+    
+    const newStats = {
+      live: filteredCampaigns.filter(c => c.status === "live").length,
+      planned: filteredCampaigns.filter(c => c.status === "planned").length,
+      completed: filteredCampaigns.filter(c => c.status === "completed").length,
+      total: filteredCampaigns.length
+    };
+    
+    setStats(newStats);
+  }, [campaigns, filterStatus]);
+
   // Navigation functions
   const goToPrevious = () => {
     if (calendarView === "month") {
@@ -139,12 +172,49 @@ const Promotions = () => {
     }
   };
 
+  // Toggle campaign type filter
+  const toggleFilter = (value: string) => {
+    setSelectedFilters(current => 
+      current.includes(value)
+        ? current.filter(item => item !== value)
+        : [...current, value]
+    );
+  };
+
   // Filter campaigns by status
   const getFilteredCampaigns = () => {
     if (filterStatus === "all") {
       return campaigns;
     }
     return campaigns.filter(campaign => campaign.status === filterStatus);
+  };
+
+  // Get status badge variant
+  const getStatusBadgeVariant = (status: CampaignStatus) => {
+    switch (status) {
+      case "live":
+        return "default";
+      case "planned":
+        return "secondary";
+      case "completed":
+        return "outline";
+      default:
+        return "outline";
+    }
+  };
+
+  // Get status icon
+  const getStatusIcon = (status: CampaignStatus) => {
+    switch (status) {
+      case "live":
+        return <CalendarCheckIcon className="h-4 w-4 text-green-500" />;
+      case "planned":
+        return <CalendarPlus className="h-4 w-4 text-blue-500" />;
+      case "completed":
+        return <CalendarX className="h-4 w-4 text-purple-500" />;
+      default:
+        return null;
+    }
   };
 
   return (
@@ -169,6 +239,45 @@ const Promotions = () => {
             </TabsList>
           </Tabs>
         </div>
+      </div>
+
+      {/* Campaign statistics cards */}
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Campaigns</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.total}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Live Campaigns</CardTitle>
+            <CalendarCheckIcon className="h-4 w-4 text-green-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.live}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Planned Campaigns</CardTitle>
+            <CalendarPlus className="h-4 w-4 text-blue-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.planned}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Completed Campaigns</CardTitle>
+            <CalendarX className="h-4 w-4 text-purple-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.completed}</div>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid gap-4">
@@ -221,6 +330,49 @@ const Promotions = () => {
                     </Select>
                   )}
 
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="gap-1">
+                        <Filter className="h-4 w-4" />
+                        <span>Campaign Types</span>
+                        {selectedFilters.length > 0 && (
+                          <Badge variant="secondary" className="ml-1">{selectedFilters.length}</Badge>
+                        )}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56">
+                      <DropdownMenuLabel>Campaign Status</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuCheckboxItem
+                        checked={selectedFilters.includes("live")}
+                        onCheckedChange={() => toggleFilter("live")}
+                      >
+                        <div className="flex items-center">
+                          {getStatusIcon("live")}
+                          <span className="ml-2">Live Campaigns</span>
+                        </div>
+                      </DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem
+                        checked={selectedFilters.includes("planned")}
+                        onCheckedChange={() => toggleFilter("planned")}
+                      >
+                        <div className="flex items-center">
+                          {getStatusIcon("planned")}
+                          <span className="ml-2">Planned Campaigns</span>
+                        </div>
+                      </DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem
+                        checked={selectedFilters.includes("completed")}
+                        onCheckedChange={() => toggleFilter("completed")}
+                      >
+                        <div className="flex items-center">
+                          {getStatusIcon("completed")}
+                          <span className="ml-2">Completed Campaigns</span>
+                        </div>
+                      </DropdownMenuCheckboxItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
                   <Select
                     value={filterStatus}
                     onValueChange={(value) => setFilterStatus(value as CampaignStatus | "all")}
@@ -238,11 +390,33 @@ const Promotions = () => {
                 </div>
               </div>
 
+              {/* Campaign Legend */}
+              <div className="flex items-center justify-start gap-4 flex-wrap">
+                <span className="text-sm">Legend:</span>
+                <div className="flex items-center gap-1">
+                  <span className="w-3 h-3 rounded-full bg-green-500"></span>
+                  <span className="text-xs">Live</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="w-3 h-3 rounded-full bg-blue-500"></span>
+                  <span className="text-xs">Planned</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="w-3 h-3 rounded-full bg-purple-500"></span>
+                  <span className="text-xs">Completed</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="w-3 h-3 rounded-full bg-gray-200 dark:bg-gray-700"></span>
+                  <span className="text-xs">Past Dates</span>
+                </div>
+              </div>
+
               {viewType === "calendar" ? (
                 <CampaignCalendar 
                   campaigns={getFilteredCampaigns()} 
                   currentDate={currentDate} 
-                  view={calendarView} 
+                  view={calendarView}
+                  selectedFilter={selectedFilters} 
                 />
               ) : (
                 <CampaignList 
