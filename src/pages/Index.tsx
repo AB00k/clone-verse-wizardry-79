@@ -1,12 +1,26 @@
+
 import React from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink, navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
+import { CalendarClock, DollarSign, ShoppingCart, Tag, Activity, Percent, Calendar } from "lucide-react";
 import StatCard from "@/components/StatCard";
 import SpendingChart from "@/components/SpendingChart";
 import BudgetProgressBar from "@/components/BudgetProgressBar";
-import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink, navigationMenuTriggerStyle } from "@/components/ui/navigation-menu"
-import { Calendar, CalendarClock } from "lucide-react";
+
+// Sample chart data for the spending chart
+const chartData = [
+  { name: "1", amount: 12000 },
+  { name: "5", amount: 15000 },
+  { name: "10", amount: 18000 },
+  { name: "15", amount: 14000 },
+  { name: "20", amount: 21000 },
+  { name: "25", amount: 19000 },
+  { name: "30", amount: 25000 },
+];
 
 export default function Index() {
   return (
@@ -19,14 +33,14 @@ export default function Index() {
           <NavigationMenu>
             <NavigationMenuList>
               <NavigationMenuItem>
-                <Link to="/" legacyBehavior passHref>
+                <Link to="/">
                   <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                     Dashboard
                   </NavigationMenuLink>
                 </Link>
               </NavigationMenuItem>
               <NavigationMenuItem>
-                <Link to="/promotions" legacyBehavior passHref>
+                <Link to="/promotions">
                   <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                     <CalendarClock className="mr-2 h-4 w-4" />
                     Promotions
@@ -91,7 +105,7 @@ export default function Index() {
             trend={{ value: "+0.3", positive: true }}
           />
           <StatCard 
-            icon={<PercentIcon className="w-6 h-6" />}
+            icon={<Percent className="w-6 h-6" />}
             iconColor="red"
             title="Average Discount %"
             value="18.5%"
