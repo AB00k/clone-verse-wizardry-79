@@ -26,52 +26,84 @@ const Promotions = () => {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [filterStatus, setFilterStatus] = useState<CampaignStatus | "all">("all");
 
-  // Sample campaign data
+  // Sample campaign data with various statuses and timeframes
   const [campaigns, setCampaigns] = useState<Campaign[]>([
+    // Currently live campaigns
     {
       id: "1",
-      title: "Summer Sale",
-      description: "20% off on all summer products",
-      startDate: new Date(2024, 5, 10), // June 10, 2024
-      endDate: new Date(2024, 5, 20),   // June 20, 2024
+      title: "Summer Flash Sale",
+      description: "25% off on all summer items",
+      startDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() - 2),
+      endDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + 5),
       status: "live",
-      color: "#4CAF50"
+      color: "#4CAF50" // Green for live campaigns
     },
     {
       id: "2",
-      title: "Back to School",
-      description: "Special discounts on school supplies",
-      startDate: new Date(2024, 7, 15), // Aug 15, 2024
-      endDate: new Date(2024, 7, 30),   // Aug 30, 2024
-      status: "planned",
-      color: "#2196F3"
+      title: "Free Delivery Week",
+      description: "No delivery charges on all orders",
+      startDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() - 1),
+      endDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + 6),
+      status: "live",
+      color: "#8BC34A" // Light green for live campaigns
     },
+    
+    // Upcoming campaigns
     {
       id: "3",
-      title: "Spring Collection",
-      description: "New spring items launch",
-      startDate: new Date(2024, 2, 1),  // March 1, 2024
-      endDate: new Date(2024, 2, 15),   // March 15, 2024
-      status: "completed",
-      color: "#9C27B0"
+      title: "Back to School",
+      description: "Special discounts on school supplies",
+      startDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + 10),
+      endDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + 24),
+      status: "planned",
+      color: "#2196F3" // Blue for planned campaigns
     },
     {
       id: "4",
       title: "Flash Sale",
       description: "24-hour flash discounts",
-      startDate: new Date(2024, 6, 5),  // July 5, 2024
-      endDate: new Date(2024, 6, 6),    // July 6, 2024
+      startDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + 7),
+      endDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + 8),
       status: "planned",
-      color: "#FF9800"
+      color: "#03A9F4" // Light blue for planned campaigns
     },
     {
       id: "5",
-      title: "Black Friday",
-      description: "Biggest sale of the year",
-      startDate: new Date(2024, 10, 29), // Nov 29, 2024
-      endDate: new Date(2024, 11, 2),    // Dec 2, 2024
+      title: "Weekend Special",
+      description: "Buy one get one free",
+      startDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + 4),
+      endDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + 6),
       status: "planned",
-      color: "#607D8B"
+      color: "#00BCD4" // Cyan for planned campaigns
+    },
+    
+    // Completed campaigns
+    {
+      id: "6",
+      title: "Spring Collection",
+      description: "New spring items launch",
+      startDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() - 20),
+      endDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() - 5),
+      status: "completed",
+      color: "#9C27B0" // Purple for completed campaigns
+    },
+    {
+      id: "7",
+      title: "Easter Promotion",
+      description: "Special Easter discounts",
+      startDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() - 15),
+      endDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() - 8),
+      status: "completed",
+      color: "#673AB7" // Deep purple for completed campaigns
+    },
+    {
+      id: "8",
+      title: "Early Bird Sale",
+      description: "Early access to summer collection",
+      startDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() - 10),
+      endDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() - 3),
+      status: "completed",
+      color: "#E91E63" // Pink for completed campaigns
     }
   ]);
 
