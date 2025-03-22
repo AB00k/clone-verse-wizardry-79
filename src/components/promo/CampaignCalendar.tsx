@@ -1,10 +1,10 @@
 
 import React from "react";
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, isSameMonth, 
-  eachDayOfInterval, isToday, isSameDay, addDays, isBefore, isAfter, isWithinInterval } from "date-fns";
+  eachDayOfInterval, isToday, isSameDay, addDays, isBefore, isAfter, isWithinInterval, 
+  getDay, startOfDay, endOfDay } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Campaign } from "@/types/campaign";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { CalendarPlus, CalendarCheck, CalendarX, Monitor, Smartphone, Globe } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -12,15 +12,17 @@ import { Badge } from "@/components/ui/badge";
 interface CampaignCalendarProps {
   campaigns: Campaign[];
   currentDate: Date;
-  view: "month" | "week";
+  view: "month" | "week" | "day";
   selectedFilter: string[];
+  selectedDayOfWeek: number | null;
 }
 
 const CampaignCalendar: React.FC<CampaignCalendarProps> = ({ 
   campaigns, 
   currentDate, 
   view,
-  selectedFilter
+  selectedFilter,
+  selectedDayOfWeek
 }) => {
   const getCalendarDays = () => {
     if (view === "month") {
@@ -30,60 +32,71 @@ const CampaignCalendar: React.FC<CampaignCalendarProps> = ({
       const endDate = endOfWeek(monthEnd);
       
       return eachDayOfInterval({ start: startDate, end: endDate });
-    } else {
+    } else if (view === "week") {
       const weekStart = startOfWeek(currentDate);
       const weekEnd = endOfWeek(currentDate);
       
       return eachDayOfInterval({ start: weekStart, end: weekEnd });
+    } else {
+      // Day view - return just the current day
+      // Or if selectedDayOfWeek is set, return all matching days in the month
+      if (selectedDayOfWeek !== null) {
+        const monthStart = startOfMonth(currentDate);
+        const monthEnd = endOfMonth(currentDate);
+        const allDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
+        return allDays.filter(day => getDay(day) === selectedDayOfWeek);
+      } else {
+        return [currentDate];
+      }
     }
   };
 
   const renderDayHeader = () => {
     const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     
+    if (view === "day" && selectedDayOfWeek !== null) {
+      return (
+        <div className="text-center text-sm font-medium text-muted-foreground py-2">
+          All {weekDays[selectedDayOfWeek]}s in {format(currentDate, "MMMM yyyy")}
+        </div>
+      );
+    }
+    
     return (
-      <div className="grid grid-cols-7 gap-1 mb-2">
-        {weekDays.map((day) => (
-          <div key={day} className="text-center text-sm font-medium text-muted-foreground py-2">
-            {day}
+      <div className={cn(
+        "grid gap-1 mb-2",
+        view === "month" || view === "week" ? "grid-cols-7" : "grid-cols-1"
+      )}>
+        {view === "day" && selectedDayOfWeek === null ? (
+          <div className="text-center text-sm font-medium text-muted-foreground py-2">
+            {format(currentDate, "EEEE")}
           </div>
-        ))}
+        ) : (
+          weekDays.map((day, index) => (
+            <div 
+              key={day} 
+              className={cn(
+                "text-center text-sm font-medium py-2",
+                (selectedDayOfWeek === index) ? "text-purple-600 bg-purple-50 rounded-md dark:bg-purple-900/20" : "text-muted-foreground"
+              )}
+            >
+              {day}
+            </div>
+          ))
+        )}
       </div>
     );
   };
 
   const getCampaignsForDay = (day: Date) => {
     return campaigns.filter(campaign => 
-      isWithinInterval(day, { start: campaign.startDate, end: campaign.endDate }) &&
+      isWithinInterval(day, { start: startOfDay(campaign.startDate), end: endOfDay(campaign.endDate) }) &&
       (selectedFilter.length === 0 || selectedFilter.includes(campaign.status))
     );
   };
 
   const isPastDay = (day: Date) => {
     return isBefore(day, new Date()) && !isToday(day);
-  };
-
-  const getPlatformIcons = () => {
-    return (
-      <div className="flex space-x-1 mt-1">
-        <Monitor className="h-3 w-3 text-blue-400" />
-        <Smartphone className="h-3 w-3 text-green-400" />
-        <Globe className="h-3 w-3 text-purple-400" />
-      </div>
-    );
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "planned":
-        return <CalendarPlus className="h-3 w-3 text-blue-500" />;
-      case "live":
-        return <CalendarCheck className="h-3 w-3 text-green-500" />;
-      case "completed":
-        return <CalendarX className="h-3 w-3 text-purple-500" />;
-      default:
-        return null;
-    }
   };
 
   const days = getCalendarDays();
@@ -94,7 +107,9 @@ const CampaignCalendar: React.FC<CampaignCalendarProps> = ({
       
       <div className={cn(
         "grid gap-1.5",
-        view === "month" ? "grid-cols-7" : "grid-cols-7"
+        view === "month" ? "grid-cols-7" : 
+        view === "week" ? "grid-cols-7" : 
+        selectedDayOfWeek !== null ? "grid-cols-1 gap-3" : "grid-cols-1"
       )}>
         {days.map((day) => {
           const dayCampaigns = getCampaignsForDay(day);
@@ -109,7 +124,9 @@ const CampaignCalendar: React.FC<CampaignCalendarProps> = ({
                 !isCurrentMonth && "bg-muted/50",
                 isPast && "bg-gray-100 dark:bg-slate-800/40",
                 isToday(day) && "bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800",
-                view === "week" && "h-32"
+                view === "week" && "h-32",
+                view === "day" && "h-40",
+                selectedDayOfWeek !== null && "h-40"
               )}
             >
               <div className="flex justify-between items-start mb-1">
@@ -127,15 +144,17 @@ const CampaignCalendar: React.FC<CampaignCalendarProps> = ({
                 </span>
               </div>
               
-              {dayCampaigns.length > 0 && (
+              {dayCampaigns.length > 0 ? (
                 <HoverCard>
                   <HoverCardTrigger asChild>
                     <div className="flex items-center gap-1 mt-1 cursor-pointer">
                       <Badge variant="outline" className={cn(
                         "text-xs h-5 px-1.5 transition-all",
-                        dayCampaigns.some(c => c.status === "live") 
-                          ? "bg-green-50 text-green-600 border-green-200 hover:bg-green-100" 
-                          : "hover:bg-secondary"
+                        dayCampaigns.some(c => c.status === "live" && !isPastDay(day)) 
+                          ? "bg-green-50 text-green-600 border-green-200 hover:bg-green-100" : 
+                          dayCampaigns.some(c => c.status === "planned") && !isPast
+                          ? "bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100"
+                          : "bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100"
                       )}>
                         {dayCampaigns.length} {dayCampaigns.length === 1 ? 'promo' : 'promos'}
                       </Badge>
@@ -156,8 +175,8 @@ const CampaignCalendar: React.FC<CampaignCalendarProps> = ({
                               </div>
                               <Badge className={cn(
                                 "text-[10px] px-1.5 py-0 h-4 capitalize",
-                                campaign.status === "live" ? "bg-green-500" : 
-                                campaign.status === "planned" ? "bg-blue-500" : "bg-purple-500"
+                                campaign.status === "live" && !isPast ? "bg-green-500" : 
+                                campaign.status === "planned" ? "bg-blue-500" : "bg-gray-500"
                               )}>
                                 {campaign.status}
                               </Badge>
@@ -175,6 +194,12 @@ const CampaignCalendar: React.FC<CampaignCalendarProps> = ({
                     </div>
                   </HoverCardContent>
                 </HoverCard>
+              ) : (
+                <div className="mt-2">
+                  <Badge variant="outline" className="text-xs h-5 px-1.5 bg-red-50 text-red-600 border-red-200">
+                    0 promos
+                  </Badge>
+                </div>
               )}
             </div>
           );

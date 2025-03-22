@@ -11,26 +11,27 @@ interface CampaignListProps {
 }
 
 const CampaignList: React.FC<CampaignListProps> = ({ campaigns }) => {
+  const today = new Date();
+  
   const getStatusBadge = (campaign: Campaign) => {
-    const today = new Date();
-    
     let status = campaign.status;
     let icon = <Calendar className="h-3 w-3 mr-1" />;
     let color = "bg-gray-500";
     
-    switch (status) {
-      case "planned":
-        icon = <CalendarPlus className="h-3 w-3 mr-1" />;
-        color = "bg-blue-500 hover:bg-blue-600";
-        break;
-      case "live":
-        icon = <CalendarCheck className="h-3 w-3 mr-1" />;
-        color = "bg-green-500 hover:bg-green-600";
-        break;
-      case "completed":
-        icon = <CalendarX className="h-3 w-3 mr-1" />;
-        color = "bg-purple-500 hover:bg-purple-600";
-        break;
+    // If the campaign is completed or the end date is in the past, show as gray
+    if (status === "completed" || isBefore(campaign.endDate, today)) {
+      icon = <CalendarX className="h-3 w-3 mr-1" />;
+      color = "bg-gray-500 hover:bg-gray-600";
+    } 
+    // If it's a future campaign marked as planned
+    else if (status === "planned") {
+      icon = <CalendarPlus className="h-3 w-3 mr-1" />;
+      color = "bg-blue-500 hover:bg-blue-600";
+    }
+    // If it's currently active
+    else if (status === "live" && !isBefore(campaign.endDate, today)) {
+      icon = <CalendarCheck className="h-3 w-3 mr-1" />;
+      color = "bg-green-500 hover:bg-green-600";
     }
     
     return (
@@ -53,50 +54,65 @@ const CampaignList: React.FC<CampaignListProps> = ({ campaigns }) => {
           No campaigns found with the selected filter
         </div>
       ) : (
-        sortedCampaigns.map((campaign) => (
-          <Card key={campaign.id} className="overflow-hidden hover:shadow-md transition-all">
-            <CardContent className="p-0">
-              <div className="flex flex-col md:flex-row">
-                <div 
-                  className="w-2 md:w-2 h-full md:h-auto"
-                  style={{ backgroundColor: campaign.color }}
-                />
-                <div className="p-4 flex-1">
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                    <div>
-                      <h3 className="text-lg font-medium">{campaign.title}</h3>
-                      <p className="text-sm text-muted-foreground">{campaign.description}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {getStatusBadge(campaign)}
-                    </div>
-                  </div>
-                  
-                  <div className="mt-4 flex flex-col md:flex-row md:items-center md:justify-between">
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <Calendar className="h-4 w-4 mr-1" />
-                      <span>
-                        {format(campaign.startDate, "MMM d, yyyy")} - {format(campaign.endDate, "MMM d, yyyy")}
-                      </span>
+        sortedCampaigns.map((campaign) => {
+          const isPast = isBefore(campaign.endDate, today);
+          
+          return (
+            <Card 
+              key={campaign.id} 
+              className={cn(
+                "overflow-hidden hover:shadow-md transition-all",
+                isPast && "opacity-75"
+              )}
+            >
+              <CardContent className="p-0">
+                <div className="flex flex-col md:flex-row">
+                  <div 
+                    className="w-2 md:w-2 h-full md:h-auto"
+                    style={{ backgroundColor: isPast ? "#9CA3AF" : campaign.color }}
+                  />
+                  <div className="p-4 flex-1">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                      <div>
+                        <h3 className="text-lg font-medium">{campaign.title}</h3>
+                        <p className="text-sm text-muted-foreground">{campaign.description}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {getStatusBadge(campaign)}
+                      </div>
                     </div>
                     
-                    <div className="flex items-center gap-2 mt-2 md:mt-0">
-                      <span className="text-xs text-muted-foreground">Platforms:</span>
-                      <div className="flex space-x-1">
-                        <Monitor className="h-4 w-4 text-blue-400" />
-                        <Smartphone className="h-4 w-4 text-green-400" />
-                        <Globe className="h-4 w-4 text-purple-400" />
+                    <div className="mt-4 flex flex-col md:flex-row md:items-center md:justify-between">
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        <Calendar className="h-4 w-4 mr-1" />
+                        <span>
+                          {format(campaign.startDate, "MMM d, yyyy")} - {format(campaign.endDate, "MMM d, yyyy")}
+                        </span>
+                      </div>
+                      
+                      <div className="flex items-center gap-2 mt-2 md:mt-0">
+                        <span className="text-xs text-muted-foreground">Platforms:</span>
+                        <div className="flex space-x-1">
+                          <Monitor className="h-4 w-4 text-blue-400" />
+                          <Smartphone className="h-4 w-4 text-green-400" />
+                          <Globe className="h-4 w-4 text-purple-400" />
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))
+              </CardContent>
+            </Card>
+          );
+        })
       )}
     </div>
   );
+};
+
+// Helper function missed in import
+const cn = (...classes: any[]) => {
+  return classes.filter(Boolean).join(" ");
 };
 
 export default CampaignList;

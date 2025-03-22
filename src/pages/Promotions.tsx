@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Calendar } from "@/components/ui/calendar";
@@ -20,7 +21,8 @@ import {
   TrendingUp,
   Layers
 } from "lucide-react";
-import { format, addMonths, subMonths, startOfWeek, endOfWeek, addWeeks, subWeeks, isWithinInterval } from "date-fns";
+import { format, addMonths, subMonths, startOfWeek, endOfWeek, addWeeks, subWeeks, 
+  isWithinInterval, addDays, isBefore, isToday } from "date-fns";
 import CampaignCalendar from "@/components/promo/CampaignCalendar";
 import CampaignList from "@/components/promo/CampaignList";
 import { Campaign, CampaignStatus } from "@/types/campaign";
@@ -35,10 +37,11 @@ import {
 
 const Promotions = () => {
   const [viewType, setViewType] = useState<"calendar" | "list">("calendar");
-  const [calendarView, setCalendarView] = useState<"month" | "week">("month");
+  const [calendarView, setCalendarView] = useState<"month" | "week" | "day">("month");
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [filterStatus, setFilterStatus] = useState<CampaignStatus | "all">("all");
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
+  const [selectedDayOfWeek, setSelectedDayOfWeek] = useState<number | null>(null);
 
   const [stats, setStats] = useState({
     live: 0,
@@ -123,12 +126,20 @@ const Promotions = () => {
   ]);
 
   useEffect(() => {
+    const today = new Date();
     const filteredCampaigns = getFilteredCampaigns();
     
+    // Update stats to count campaigns correctly based on their actual status
     const newStats = {
-      live: filteredCampaigns.filter(c => c.status === "live").length,
+      live: filteredCampaigns.filter(c => 
+        c.status === "live" && 
+        !isBefore(c.endDate, today)
+      ).length,
       planned: filteredCampaigns.filter(c => c.status === "planned").length,
-      completed: filteredCampaigns.filter(c => c.status === "completed").length,
+      completed: filteredCampaigns.filter(c => 
+        c.status === "completed" || 
+        isBefore(c.endDate, today)
+      ).length,
       total: filteredCampaigns.length
     };
     
@@ -138,16 +149,20 @@ const Promotions = () => {
   const goToPrevious = () => {
     if (calendarView === "month") {
       setCurrentDate(subMonths(currentDate, 1));
-    } else {
+    } else if (calendarView === "week") {
       setCurrentDate(subWeeks(currentDate, 1));
+    } else {
+      setCurrentDate(addDays(currentDate, -1));
     }
   };
 
   const goToNext = () => {
     if (calendarView === "month") {
       setCurrentDate(addMonths(currentDate, 1));
-    } else {
+    } else if (calendarView === "week") {
       setCurrentDate(addWeeks(currentDate, 1));
+    } else {
+      setCurrentDate(addDays(currentDate, 1));
     }
   };
 
@@ -158,10 +173,12 @@ const Promotions = () => {
   const getViewDateRange = () => {
     if (calendarView === "month") {
       return format(currentDate, "MMMM yyyy");
-    } else {
+    } else if (calendarView === "week") {
       const start = startOfWeek(currentDate);
       const end = endOfWeek(currentDate);
       return `${format(start, "MMM d")} - ${format(end, "MMM d, yyyy")}`;
+    } else {
+      return format(currentDate, "MMMM d, yyyy");
     }
   };
 
@@ -180,29 +197,11 @@ const Promotions = () => {
     return campaigns.filter(campaign => campaign.status === filterStatus);
   };
 
-  const getStatusBadgeVariant = (status: CampaignStatus) => {
-    switch (status) {
-      case "live":
-        return "default";
-      case "planned":
-        return "secondary";
-      case "completed":
-        return "outline";
-      default:
-        return "outline";
-    }
-  };
-
-  const getStatusIcon = (status: CampaignStatus) => {
-    switch (status) {
-      case "live":
-        return <CalendarCheckIcon className="h-4 w-4 text-green-500" />;
-      case "planned":
-        return <CalendarPlus className="h-4 w-4 text-blue-500" />;
-      case "completed":
-        return <CalendarX className="h-4 w-4 text-purple-500" />;
-      default:
-        return null;
+  const handleDayOfWeekSelect = (value: string) => {
+    if (value === "none") {
+      setSelectedDayOfWeek(null);
+    } else {
+      setSelectedDayOfWeek(parseInt(value));
     }
   };
 
@@ -255,7 +254,7 @@ const Promotions = () => {
         />
         <StatCard 
           icon={<CalendarX className="h-5 w-5" />}
-          iconColor="purple"
+          iconColor="gray"
           title="Completed Campaigns"
           value={stats.completed}
           trend={{ value: "Past", positive: false }}
@@ -300,18 +299,48 @@ const Promotions = () => {
 
                 <div className="flex flex-col md:flex-row gap-2 md:items-center">
                   {viewType === "calendar" && (
-                    <Select
-                      value={calendarView}
-                      onValueChange={(value) => setCalendarView(value as "month" | "week")}
-                    >
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="View" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="month">Month View</SelectItem>
-                        <SelectItem value="week">Week View</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <>
+                      <Select
+                        value={calendarView}
+                        onValueChange={(value) => {
+                          setCalendarView(value as "month" | "week" | "day");
+                          // Reset day of week selection when changing views
+                          if (value !== "day") {
+                            setSelectedDayOfWeek(null);
+                          }
+                        }}
+                      >
+                        <SelectTrigger className="w-[180px]">
+                          <SelectValue placeholder="View" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="month">Month View</SelectItem>
+                          <SelectItem value="week">Week View</SelectItem>
+                          <SelectItem value="day">Day View</SelectItem>
+                        </SelectContent>
+                      </Select>
+
+                      {calendarView === "day" && (
+                        <Select
+                          value={selectedDayOfWeek !== null ? selectedDayOfWeek.toString() : "none"}
+                          onValueChange={handleDayOfWeekSelect}
+                        >
+                          <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Select day of week" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">Single Day</SelectItem>
+                            <SelectItem value="0">All Sundays</SelectItem>
+                            <SelectItem value="1">All Mondays</SelectItem>
+                            <SelectItem value="2">All Tuesdays</SelectItem>
+                            <SelectItem value="3">All Wednesdays</SelectItem>
+                            <SelectItem value="4">All Thursdays</SelectItem>
+                            <SelectItem value="5">All Fridays</SelectItem>
+                            <SelectItem value="6">All Saturdays</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    </>
                   )}
 
                   <DropdownMenu>
@@ -350,7 +379,7 @@ const Promotions = () => {
                         onCheckedChange={() => toggleFilter("completed")}
                       >
                         <div className="flex items-center">
-                          <CalendarX className="h-4 w-4 text-purple-500 mr-2" />
+                          <CalendarX className="h-4 w-4 text-gray-500 mr-2" />
                           <span>Completed Campaigns</span>
                         </div>
                       </DropdownMenuCheckboxItem>
@@ -385,8 +414,12 @@ const Promotions = () => {
                   <span className="text-xs">Planned</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className="w-3 h-3 rounded-full bg-purple-500"></span>
+                  <span className="w-3 h-3 rounded-full bg-gray-500"></span>
                   <span className="text-xs">Completed</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="w-3 h-3 rounded-full bg-red-500"></span>
+                  <span className="text-xs">No Promos</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <span className="w-3 h-3 rounded-full bg-gray-200 dark:bg-gray-700"></span>
@@ -399,7 +432,8 @@ const Promotions = () => {
                   campaigns={getFilteredCampaigns()} 
                   currentDate={currentDate} 
                   view={calendarView}
-                  selectedFilter={selectedFilters} 
+                  selectedFilter={selectedFilters}
+                  selectedDayOfWeek={selectedDayOfWeek}
                 />
               ) : (
                 <CampaignList 
