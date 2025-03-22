@@ -5,7 +5,8 @@ import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, isSameMonth,
 import { cn } from "@/lib/utils";
 import { Campaign } from "@/types/campaign";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { CalendarPlus, CalendarCheck, CalendarX } from "lucide-react";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { CalendarPlus, CalendarCheck, CalendarX, Monitor, Smartphone, Globe } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 interface CampaignCalendarProps {
@@ -62,6 +63,16 @@ const CampaignCalendar: React.FC<CampaignCalendarProps> = ({
     return isBefore(day, new Date()) && !isToday(day);
   };
 
+  const getPlatformIcons = () => {
+    return (
+      <div className="flex space-x-1 mt-1">
+        <Monitor className="h-3 w-3 text-blue-400" />
+        <Smartphone className="h-3 w-3 text-green-400" />
+        <Globe className="h-3 w-3 text-purple-400" />
+      </div>
+    );
+  };
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "planned":
@@ -78,11 +89,11 @@ const CampaignCalendar: React.FC<CampaignCalendarProps> = ({
   const days = getCalendarDays();
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-lg border shadow-sm bg-card">
       {renderDayHeader()}
       
       <div className={cn(
-        "grid gap-1",
+        "grid gap-1.5",
         view === "month" ? "grid-cols-7" : "grid-cols-7"
       )}>
         {days.map((day) => {
@@ -94,10 +105,10 @@ const CampaignCalendar: React.FC<CampaignCalendarProps> = ({
             <div
               key={day.toString()}
               className={cn(
-                "min-h-16 p-2 border rounded-md",
+                "min-h-16 p-2 border rounded-md transition-all duration-200 hover:shadow-md",
                 !isCurrentMonth && "bg-muted/50",
                 isPast && "bg-gray-100 dark:bg-slate-800/40",
-                isToday(day) && "bg-blue-50/60 dark:bg-blue-950/20",
+                isToday(day) && "bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800",
                 view === "week" && "h-32"
               )}
             >
@@ -106,7 +117,7 @@ const CampaignCalendar: React.FC<CampaignCalendarProps> = ({
                   className={cn(
                     "text-sm font-medium",
                     !isCurrentMonth && "text-muted-foreground",
-                    isToday(day) && "bg-primary text-primary-foreground w-6 h-6 rounded-full flex items-center justify-center"
+                    isToday(day) && "bg-purple-500 text-white w-6 h-6 rounded-full flex items-center justify-center"
                   )}
                 >
                   {format(day, "d")}
@@ -117,34 +128,53 @@ const CampaignCalendar: React.FC<CampaignCalendarProps> = ({
               </div>
               
               {dayCampaigns.length > 0 && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex items-center gap-1 mt-1 cursor-pointer">
-                        <Badge variant="outline" className="text-xs h-5 px-1.5">
-                          {dayCampaigns.length} {dayCampaigns.length === 1 ? 'promo' : 'promos'}
-                        </Badge>
+                <HoverCard>
+                  <HoverCardTrigger asChild>
+                    <div className="flex items-center gap-1 mt-1 cursor-pointer">
+                      <Badge variant="outline" className={cn(
+                        "text-xs h-5 px-1.5 transition-all",
+                        dayCampaigns.some(c => c.status === "live") 
+                          ? "bg-green-50 text-green-600 border-green-200 hover:bg-green-100" 
+                          : "hover:bg-secondary"
+                      )}>
+                        {dayCampaigns.length} {dayCampaigns.length === 1 ? 'promo' : 'promos'}
+                      </Badge>
+                    </div>
+                  </HoverCardTrigger>
+                  <HoverCardContent className="p-0 w-72 overflow-hidden">
+                    <div className="max-w-xs">
+                      <div className="bg-purple-500 text-white px-4 py-2 font-medium">
+                        {format(day, "MMMM d, yyyy")}
                       </div>
-                    </TooltipTrigger>
-                    <TooltipContent className="p-0 overflow-hidden">
-                      <div className="max-w-xs p-2 space-y-2">
-                        <p className="font-medium text-sm border-b pb-1">{format(day, "MMMM d, yyyy")}</p>
-                        <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
-                          {dayCampaigns.map((campaign) => (
-                            <div key={campaign.id} className="text-sm">
-                              <div className="flex items-center gap-1">
+                      <div className="p-3 space-y-3 max-h-64 overflow-y-auto">
+                        {dayCampaigns.map((campaign) => (
+                          <div key={campaign.id} className="space-y-1 pb-2 border-b last:border-0">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-1.5">
                                 <span className="w-2 h-2 rounded-full" style={{ backgroundColor: campaign.color }}></span>
                                 <span className="font-medium">{campaign.title}</span>
-                                <span className="ml-auto text-xs capitalize">{campaign.status}</span>
                               </div>
-                              <p className="text-xs ml-3 opacity-80">{campaign.description}</p>
+                              <Badge className={cn(
+                                "text-[10px] px-1.5 py-0 h-4 capitalize",
+                                campaign.status === "live" ? "bg-green-500" : 
+                                campaign.status === "planned" ? "bg-blue-500" : "bg-purple-500"
+                              )}>
+                                {campaign.status}
+                              </Badge>
                             </div>
-                          ))}
-                        </div>
+                            <p className="text-xs text-muted-foreground">{campaign.description}</p>
+                            <div className="flex items-center space-x-1 mt-1">
+                              <span className="text-xs text-muted-foreground mr-1">Platforms:</span>
+                              <Monitor className="h-3 w-3 text-blue-400" />
+                              <Smartphone className="h-3 w-3 text-green-400" />
+                              <Globe className="h-3 w-3 text-purple-400" />
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                    </div>
+                  </HoverCardContent>
+                </HoverCard>
               )}
             </div>
           );

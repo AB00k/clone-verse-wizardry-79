@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Calendar } from "@/components/ui/calendar";
@@ -7,6 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import StatCard from "@/components/StatCard";
 import { 
   Calendar as CalendarIcon, 
   ChevronLeft, 
@@ -15,7 +15,10 @@ import {
   CalendarPlus, 
   CalendarX,
   List,
-  Filter
+  Filter,
+  PieChart,
+  TrendingUp,
+  Layers
 } from "lucide-react";
 import { format, addMonths, subMonths, startOfWeek, endOfWeek, addWeeks, subWeeks, isWithinInterval } from "date-fns";
 import CampaignCalendar from "@/components/promo/CampaignCalendar";
@@ -37,7 +40,6 @@ const Promotions = () => {
   const [filterStatus, setFilterStatus] = useState<CampaignStatus | "all">("all");
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
 
-  // Stats for the campaign summary
   const [stats, setStats] = useState({
     live: 0,
     planned: 0,
@@ -45,9 +47,7 @@ const Promotions = () => {
     total: 0
   });
 
-  // Sample campaign data with various statuses and timeframes
   const [campaigns, setCampaigns] = useState<Campaign[]>([
-    // Currently live campaigns
     {
       id: "1",
       title: "Summer Flash Sale",
@@ -55,7 +55,7 @@ const Promotions = () => {
       startDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() - 2),
       endDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + 5),
       status: "live",
-      color: "#4CAF50" // Green for live campaigns
+      color: "#4CAF50"
     },
     {
       id: "2",
@@ -64,10 +64,8 @@ const Promotions = () => {
       startDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() - 1),
       endDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + 6),
       status: "live",
-      color: "#8BC34A" // Light green for live campaigns
+      color: "#8BC34A"
     },
-    
-    // Upcoming campaigns
     {
       id: "3",
       title: "Back to School",
@@ -75,7 +73,7 @@ const Promotions = () => {
       startDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + 10),
       endDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + 24),
       status: "planned",
-      color: "#2196F3" // Blue for planned campaigns
+      color: "#2196F3"
     },
     {
       id: "4",
@@ -84,7 +82,7 @@ const Promotions = () => {
       startDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + 7),
       endDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + 8),
       status: "planned",
-      color: "#03A9F4" // Light blue for planned campaigns
+      color: "#03A9F4"
     },
     {
       id: "5",
@@ -93,10 +91,8 @@ const Promotions = () => {
       startDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + 4),
       endDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + 6),
       status: "planned",
-      color: "#00BCD4" // Cyan for planned campaigns
+      color: "#00BCD4"
     },
-    
-    // Completed campaigns
     {
       id: "6",
       title: "Spring Collection",
@@ -104,7 +100,7 @@ const Promotions = () => {
       startDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() - 20),
       endDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() - 5),
       status: "completed",
-      color: "#9C27B0" // Purple for completed campaigns
+      color: "#9C27B0"
     },
     {
       id: "7",
@@ -113,7 +109,7 @@ const Promotions = () => {
       startDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() - 15),
       endDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() - 8),
       status: "completed",
-      color: "#673AB7" // Deep purple for completed campaigns
+      color: "#673AB7"
     },
     {
       id: "8",
@@ -122,11 +118,10 @@ const Promotions = () => {
       startDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() - 10),
       endDate: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() - 3),
       status: "completed",
-      color: "#E91E63" // Pink for completed campaigns
+      color: "#E91E63"
     }
   ]);
 
-  // Calculate campaign stats
   useEffect(() => {
     const filteredCampaigns = getFilteredCampaigns();
     
@@ -140,7 +135,6 @@ const Promotions = () => {
     setStats(newStats);
   }, [campaigns, filterStatus]);
 
-  // Navigation functions
   const goToPrevious = () => {
     if (calendarView === "month") {
       setCurrentDate(subMonths(currentDate, 1));
@@ -161,7 +155,6 @@ const Promotions = () => {
     setCurrentDate(new Date());
   };
 
-  // Get the date range based on current view
   const getViewDateRange = () => {
     if (calendarView === "month") {
       return format(currentDate, "MMMM yyyy");
@@ -172,7 +165,6 @@ const Promotions = () => {
     }
   };
 
-  // Toggle campaign type filter
   const toggleFilter = (value: string) => {
     setSelectedFilters(current => 
       current.includes(value)
@@ -181,7 +173,6 @@ const Promotions = () => {
     );
   };
 
-  // Filter campaigns by status
   const getFilteredCampaigns = () => {
     if (filterStatus === "all") {
       return campaigns;
@@ -189,7 +180,6 @@ const Promotions = () => {
     return campaigns.filter(campaign => campaign.status === filterStatus);
   };
 
-  // Get status badge variant
   const getStatusBadgeVariant = (status: CampaignStatus) => {
     switch (status) {
       case "live":
@@ -203,7 +193,6 @@ const Promotions = () => {
     }
   };
 
-  // Get status icon
   const getStatusIcon = (status: CampaignStatus) => {
     switch (status) {
       case "live":
@@ -218,9 +207,11 @@ const Promotions = () => {
   };
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+    <div className="flex-1 space-y-6 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">Promotion Planner</h2>
+        <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-purple-500 to-purple-800 bg-clip-text text-transparent">
+          Promotion Planner
+        </h2>
         <div className="flex items-center space-x-2">
           <Tabs 
             value={viewType} 
@@ -241,49 +232,40 @@ const Promotions = () => {
         </div>
       </div>
 
-      {/* Campaign statistics cards */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Campaigns</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Live Campaigns</CardTitle>
-            <CalendarCheckIcon className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.live}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Planned Campaigns</CardTitle>
-            <CalendarPlus className="h-4 w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.planned}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completed Campaigns</CardTitle>
-            <CalendarX className="h-4 w-4 text-purple-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.completed}</div>
-          </CardContent>
-        </Card>
+        <StatCard 
+          icon={<Layers className="h-5 w-5" />}
+          iconColor="purple"
+          title="Total Campaigns"
+          value={stats.total}
+        />
+        <StatCard 
+          icon={<CalendarCheckIcon className="h-5 w-5" />}
+          iconColor="green"
+          title="Live Campaigns"
+          value={stats.live}
+          trend={{ value: "Active Now", positive: true }}
+        />
+        <StatCard 
+          icon={<CalendarPlus className="h-5 w-5" />}
+          iconColor="blue"
+          title="Planned Campaigns"
+          value={stats.planned}
+          trend={{ value: "Upcoming", positive: true }}
+        />
+        <StatCard 
+          icon={<CalendarX className="h-5 w-5" />}
+          iconColor="purple"
+          title="Completed Campaigns"
+          value={stats.completed}
+          trend={{ value: "Past", positive: false }}
+        />
       </div>
 
       <div className="grid gap-4">
-        <Card>
+        <Card className="border shadow-sm overflow-visible">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-lg font-medium">
+            <CardTitle className="text-lg font-medium bg-gradient-to-r from-purple-600 to-purple-400 bg-clip-text text-transparent">
               {viewType === "calendar" ? "Campaign Calendar" : "Campaign List"}
             </CardTitle>
           </CardHeader>
@@ -295,12 +277,13 @@ const Promotions = () => {
                     variant="outline" 
                     size="icon" 
                     onClick={goToPrevious}
+                    className="hover:bg-purple-50 hover:text-purple-600 hover:border-purple-200"
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
                   <Button 
                     variant="outline" 
-                    className="min-w-32 font-medium" 
+                    className="min-w-32 font-medium hover:bg-purple-50 hover:text-purple-600 hover:border-purple-200" 
                     onClick={goToToday}
                   >
                     {getViewDateRange()}
@@ -309,6 +292,7 @@ const Promotions = () => {
                     variant="outline" 
                     size="icon" 
                     onClick={goToNext}
+                    className="hover:bg-purple-50 hover:text-purple-600 hover:border-purple-200"
                   >
                     <ChevronRight className="h-4 w-4" />
                   </Button>
@@ -336,7 +320,7 @@ const Promotions = () => {
                         <Filter className="h-4 w-4" />
                         <span>Campaign Types</span>
                         {selectedFilters.length > 0 && (
-                          <Badge variant="secondary" className="ml-1">{selectedFilters.length}</Badge>
+                          <Badge variant="secondary" className="ml-1 bg-purple-100 text-purple-600">{selectedFilters.length}</Badge>
                         )}
                       </Button>
                     </DropdownMenuTrigger>
@@ -348,8 +332,8 @@ const Promotions = () => {
                         onCheckedChange={() => toggleFilter("live")}
                       >
                         <div className="flex items-center">
-                          {getStatusIcon("live")}
-                          <span className="ml-2">Live Campaigns</span>
+                          <CalendarCheckIcon className="h-4 w-4 text-green-500 mr-2" />
+                          <span>Live Campaigns</span>
                         </div>
                       </DropdownMenuCheckboxItem>
                       <DropdownMenuCheckboxItem
@@ -357,8 +341,8 @@ const Promotions = () => {
                         onCheckedChange={() => toggleFilter("planned")}
                       >
                         <div className="flex items-center">
-                          {getStatusIcon("planned")}
-                          <span className="ml-2">Planned Campaigns</span>
+                          <CalendarPlus className="h-4 w-4 text-blue-500 mr-2" />
+                          <span>Planned Campaigns</span>
                         </div>
                       </DropdownMenuCheckboxItem>
                       <DropdownMenuCheckboxItem
@@ -366,8 +350,8 @@ const Promotions = () => {
                         onCheckedChange={() => toggleFilter("completed")}
                       >
                         <div className="flex items-center">
-                          {getStatusIcon("completed")}
-                          <span className="ml-2">Completed Campaigns</span>
+                          <CalendarX className="h-4 w-4 text-purple-500 mr-2" />
+                          <span>Completed Campaigns</span>
                         </div>
                       </DropdownMenuCheckboxItem>
                     </DropdownMenuContent>
@@ -390,9 +374,8 @@ const Promotions = () => {
                 </div>
               </div>
 
-              {/* Campaign Legend */}
-              <div className="flex items-center justify-start gap-4 flex-wrap">
-                <span className="text-sm">Legend:</span>
+              <div className="flex items-center justify-start gap-4 flex-wrap bg-secondary/50 p-2 rounded-md">
+                <span className="text-sm font-medium text-muted-foreground">Legend:</span>
                 <div className="flex items-center gap-1">
                   <span className="w-3 h-3 rounded-full bg-green-500"></span>
                   <span className="text-xs">Live</span>

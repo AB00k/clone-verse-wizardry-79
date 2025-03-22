@@ -4,7 +4,7 @@ import { Campaign } from "@/types/campaign";
 import { Card, CardContent } from "@/components/ui/card";
 import { format, isAfter, isBefore, isToday } from "date-fns";
 import { Badge } from "@/components/ui/badge";
-import { CalendarPlus, CalendarCheck, CalendarX, Calendar } from "lucide-react";
+import { CalendarPlus, CalendarCheck, CalendarX, Calendar, Monitor, Smartphone, Globe } from "lucide-react";
 
 interface CampaignListProps {
   campaigns: Campaign[];
@@ -29,7 +29,7 @@ const CampaignList: React.FC<CampaignListProps> = ({ campaigns }) => {
         break;
       case "completed":
         icon = <CalendarX className="h-3 w-3 mr-1" />;
-        color = "bg-red-500 hover:bg-red-600";
+        color = "bg-purple-500 hover:bg-purple-600";
         break;
     }
     
@@ -54,7 +54,7 @@ const CampaignList: React.FC<CampaignListProps> = ({ campaigns }) => {
         </div>
       ) : (
         sortedCampaigns.map((campaign) => (
-          <Card key={campaign.id} className="overflow-hidden">
+          <Card key={campaign.id} className="overflow-hidden hover:shadow-md transition-all">
             <CardContent className="p-0">
               <div className="flex flex-col md:flex-row">
                 <div 
@@ -72,12 +72,21 @@ const CampaignList: React.FC<CampaignListProps> = ({ campaigns }) => {
                     </div>
                   </div>
                   
-                  <div className="mt-4 flex items-center text-sm text-muted-foreground">
-                    <div className="flex items-center">
+                  <div className="mt-4 flex flex-col md:flex-row md:items-center md:justify-between">
+                    <div className="flex items-center text-sm text-muted-foreground">
                       <Calendar className="h-4 w-4 mr-1" />
                       <span>
                         {format(campaign.startDate, "MMM d, yyyy")} - {format(campaign.endDate, "MMM d, yyyy")}
                       </span>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 mt-2 md:mt-0">
+                      <span className="text-xs text-muted-foreground">Platforms:</span>
+                      <div className="flex space-x-1">
+                        <Monitor className="h-4 w-4 text-blue-400" />
+                        <Smartphone className="h-4 w-4 text-green-400" />
+                        <Globe className="h-4 w-4 text-purple-400" />
+                      </div>
                     </div>
                   </div>
                 </div>
