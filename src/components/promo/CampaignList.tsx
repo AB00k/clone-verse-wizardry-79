@@ -141,9 +141,4 @@ const CampaignList: React.FC<CampaignListProps> = ({ campaigns }) => {
   );
 };
 
-// Helper function missed in import
-const cn = (...classes: any[]) => {
-  return classes.filter(Boolean).join(" ");
-};
-
 export default CampaignList;
