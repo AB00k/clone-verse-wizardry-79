@@ -5,6 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { format, isAfter, isBefore, isToday } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { CalendarPlus, CalendarCheck, CalendarX, Calendar, Monitor, Smartphone, Globe } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 interface CampaignListProps {
   campaigns: Campaign[];
@@ -92,10 +94,39 @@ const CampaignList: React.FC<CampaignListProps> = ({ campaigns }) => {
                       
                       <div className="flex items-center gap-2 mt-2 md:mt-0">
                         <span className="text-xs text-muted-foreground">Platforms:</span>
-                        <div className="flex space-x-1">
-                          <Monitor className="h-4 w-4 text-blue-400" />
-                          <Smartphone className="h-4 w-4 text-green-400" />
-                          <Globe className="h-4 w-4 text-purple-400" />
+                        <div className="flex space-x-2">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger>
+                                <Monitor className="h-4 w-4 text-blue-400" />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p className="text-xs">Desktop</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger>
+                                <Smartphone className="h-4 w-4 text-green-400" />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p className="text-xs">Mobile</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger>
+                                <Globe className="h-4 w-4 text-purple-400" />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p className="text-xs">Web</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         </div>
                       </div>
                     </div>
