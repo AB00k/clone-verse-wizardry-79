@@ -19,7 +19,9 @@ import {
   Filter,
   PieChart,
   TrendingUp,
-  Layers
+  Layers,
+  Tag,
+  Plus
 } from "lucide-react";
 import { format, addMonths, subMonths, startOfWeek, endOfWeek, addWeeks, subWeeks, 
   isWithinInterval, addDays, isBefore, isToday } from "date-fns";
@@ -208,7 +210,7 @@ const Promotions = () => {
   return (
     <div className="flex-1 space-y-6 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-purple-500 to-purple-800 bg-clip-text text-transparent">
+        <h2 className="text-3xl font-bold tracking-tight text-gray-900">
           Promotion Planner
         </h2>
         <div className="flex items-center space-x-2">
@@ -217,7 +219,7 @@ const Promotions = () => {
             onValueChange={(value) => setViewType(value as "calendar" | "list")}
             className="w-[200px]"
           >
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-2 tab-container">
               <TabsTrigger value="calendar" className="flex items-center gap-1">
                 <CalendarIcon className="h-4 w-4" />
                 <span>Calendar</span>
@@ -228,6 +230,10 @@ const Promotions = () => {
               </TabsTrigger>
             </TabsList>
           </Tabs>
+          
+          <Button className="add-button">
+            <Plus className="h-5 w-5" /> Create Campaign
+          </Button>
         </div>
       </div>
 
@@ -262,9 +268,9 @@ const Promotions = () => {
       </div>
 
       <div className="grid gap-4">
-        <Card className="border shadow-sm overflow-visible">
+        <Card className="border shadow-sm overflow-visible rounded-xl">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-lg font-medium bg-gradient-to-r from-purple-600 to-purple-400 bg-clip-text text-transparent">
+            <CardTitle className="text-lg font-medium text-gray-900">
               {viewType === "calendar" ? "Campaign Calendar" : "Campaign List"}
             </CardTitle>
           </CardHeader>
@@ -276,13 +282,13 @@ const Promotions = () => {
                     variant="outline" 
                     size="icon" 
                     onClick={goToPrevious}
-                    className="hover:bg-purple-50 hover:text-purple-600 hover:border-purple-200"
+                    className="hover:bg-gray-50 hover:text-gray-600 hover:border-gray-200 rounded-full"
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
                   <Button 
                     variant="outline" 
-                    className="min-w-32 font-medium hover:bg-purple-50 hover:text-purple-600 hover:border-purple-200" 
+                    className="min-w-32 font-medium hover:bg-gray-50 hover:text-gray-600 hover:border-gray-200 rounded-full" 
                     onClick={goToToday}
                   >
                     {getViewDateRange()}
@@ -291,7 +297,7 @@ const Promotions = () => {
                     variant="outline" 
                     size="icon" 
                     onClick={goToNext}
-                    className="hover:bg-purple-50 hover:text-purple-600 hover:border-purple-200"
+                    className="hover:bg-gray-50 hover:text-gray-600 hover:border-gray-200 rounded-full"
                   >
                     <ChevronRight className="h-4 w-4" />
                   </Button>
@@ -310,7 +316,7 @@ const Promotions = () => {
                           }
                         }}
                       >
-                        <SelectTrigger className="w-[180px]">
+                        <SelectTrigger className="w-[180px] rounded-full">
                           <SelectValue placeholder="View" />
                         </SelectTrigger>
                         <SelectContent>
@@ -325,7 +331,7 @@ const Promotions = () => {
                           value={selectedDayOfWeek !== null ? selectedDayOfWeek.toString() : "none"}
                           onValueChange={handleDayOfWeekSelect}
                         >
-                          <SelectTrigger className="w-[180px]">
+                          <SelectTrigger className="w-[180px] rounded-full">
                             <SelectValue placeholder="Select day of week" />
                           </SelectTrigger>
                           <SelectContent>
@@ -345,11 +351,11 @@ const Promotions = () => {
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="outline" className="gap-1">
+                      <Button variant="outline" className="gap-1 rounded-full">
                         <Filter className="h-4 w-4" />
                         <span>Campaign Types</span>
                         {selectedFilters.length > 0 && (
-                          <Badge variant="secondary" className="ml-1 bg-purple-100 text-purple-600">{selectedFilters.length}</Badge>
+                          <Badge variant="secondary" className="ml-1 bg-gray-100 text-gray-600">{selectedFilters.length}</Badge>
                         )}
                       </Button>
                     </DropdownMenuTrigger>
@@ -361,7 +367,7 @@ const Promotions = () => {
                         onCheckedChange={() => toggleFilter("live")}
                       >
                         <div className="flex items-center">
-                          <CalendarCheckIcon className="h-4 w-4 text-green-500 mr-2" />
+                          <CalendarCheckIcon className="h-4 w-4 text-[#26C281] mr-2" />
                           <span>Live Campaigns</span>
                         </div>
                       </DropdownMenuCheckboxItem>
@@ -370,7 +376,7 @@ const Promotions = () => {
                         onCheckedChange={() => toggleFilter("planned")}
                       >
                         <div className="flex items-center">
-                          <CalendarPlus className="h-4 w-4 text-blue-500 mr-2" />
+                          <CalendarPlus className="h-4 w-4 text-[#0E86FF] mr-2" />
                           <span>Planned Campaigns</span>
                         </div>
                       </DropdownMenuCheckboxItem>
@@ -390,7 +396,7 @@ const Promotions = () => {
                     value={filterStatus}
                     onValueChange={(value) => setFilterStatus(value as CampaignStatus | "all")}
                   >
-                    <SelectTrigger className="w-[180px]">
+                    <SelectTrigger className="w-[180px] rounded-full">
                       <SelectValue placeholder="Status Filter" />
                     </SelectTrigger>
                     <SelectContent>
@@ -403,14 +409,14 @@ const Promotions = () => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-start gap-4 flex-wrap bg-secondary/50 p-2 rounded-md">
+              <div className="flex items-center justify-start gap-4 flex-wrap bg-gray-50 p-2 rounded-md">
                 <span className="text-sm font-medium text-muted-foreground">Legend:</span>
                 <div className="flex items-center gap-1">
-                  <span className="w-3 h-3 rounded-full bg-green-500"></span>
+                  <span className="w-3 h-3 rounded-full bg-[#26C281]"></span>
                   <span className="text-xs">Live</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className="w-3 h-3 rounded-full bg-blue-500"></span>
+                  <span className="w-3 h-3 rounded-full bg-[#0E86FF]"></span>
                   <span className="text-xs">Planned</span>
                 </div>
                 <div className="flex items-center gap-1">
@@ -418,7 +424,7 @@ const Promotions = () => {
                   <span className="text-xs">Completed</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className="w-3 h-3 rounded-full bg-red-500"></span>
+                  <span className="w-3 h-3 rounded-full bg-[#FF3B30]"></span>
                   <span className="text-xs">No Promos</span>
                 </div>
                 <div className="flex items-center gap-1">

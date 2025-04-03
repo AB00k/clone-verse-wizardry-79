@@ -14,7 +14,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
+    --primary: 0 84% 60%; /* Adjusted to red */
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -33,7 +33,7 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -43,6 +43,14 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Custom theme colors based on the image */
+    --blue-accent: 214 100% 49%;
+    --orange-accent: 27 100% 59%;
+    --green-accent: 142 64% 47%;
+    --purple-accent: 271 68% 64%;
+    --red-accent: 0 84% 60%;
+    --light-blue-accent: 195 84% 60%;
   }
 
   .dark {
@@ -98,11 +106,33 @@
 /* Stats Card Animation */
 .stats-card {
   transition: all 0.3s ease;
+  @apply rounded-2xl bg-white shadow-sm border border-gray-100;
 }
 
 .stats-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+}
+
+/* Stat Icon Containers */
+.stat-icon-blue {
+  @apply bg-[#0E86FF] text-white;
+}
+
+.stat-icon-orange {
+  @apply bg-[#FF9D2D] text-white;
+}
+
+.stat-icon-green {
+  @apply bg-[#26C281] text-white;
+}
+
+.stat-icon-purple {
+  @apply bg-[#9F56FF] text-white;
+}
+
+.stat-icon-container {
+  @apply rounded-full flex items-center justify-center h-14 w-14;
 }
 
 /* Smooth Progress Bar Animation */
@@ -129,4 +159,32 @@
 
 .icon-container:hover {
   transform: scale(1.1);
+}
+
+/* Campaign card styling */
+.campaign-card {
+  @apply overflow-hidden hover:shadow-md transition-all rounded-xl;
+}
+
+/* Trend indicators */
+.trend-up {
+  @apply text-green-500 flex items-center;
+}
+
+.trend-down {
+  @apply text-red-500 flex items-center;
+}
+
+/* Add button styling */
+.add-button {
+  @apply bg-[#FF3B30] hover:bg-[#E5352B] text-white rounded-full px-6 py-3 flex items-center gap-2 shadow-sm transition-all;
+}
+
+/* Tab styling */
+.tab-container {
+  @apply bg-gray-50 rounded-full p-1;
+}
+
+.tab-active {
+  @apply bg-white shadow-sm;
 }

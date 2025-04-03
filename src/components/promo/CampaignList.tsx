@@ -63,7 +63,7 @@ const CampaignList: React.FC<CampaignListProps> = ({ campaigns }) => {
             <Card 
               key={campaign.id} 
               className={cn(
-                "overflow-hidden hover:shadow-md transition-all",
+                "campaign-card",
                 isPast && "opacity-75"
               )}
             >
@@ -98,7 +98,7 @@ const CampaignList: React.FC<CampaignListProps> = ({ campaigns }) => {
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger>
-                                <Monitor className="h-4 w-4 text-blue-400" />
+                                <Monitor className="h-4 w-4 text-[#0E86FF]" />
                               </TooltipTrigger>
                               <TooltipContent>
                                 <p className="text-xs">Desktop</p>
@@ -109,7 +109,7 @@ const CampaignList: React.FC<CampaignListProps> = ({ campaigns }) => {
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger>
-                                <Smartphone className="h-4 w-4 text-green-400" />
+                                <Smartphone className="h-4 w-4 text-[#26C281]" />
                               </TooltipTrigger>
                               <TooltipContent>
                                 <p className="text-xs">Mobile</p>
@@ -120,7 +120,7 @@ const CampaignList: React.FC<CampaignListProps> = ({ campaigns }) => {
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger>
-                                <Globe className="h-4 w-4 text-purple-400" />
+                                <Globe className="h-4 w-4 text-[#9F56FF]" />
                               </TooltipTrigger>
                               <TooltipContent>
                                 <p className="text-xs">Web</p>

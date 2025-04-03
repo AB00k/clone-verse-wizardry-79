@@ -2,7 +2,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 
-type IconColor = 'gray' | 'blue' | 'red' | 'orange' | 'green' | 'purple';
+type IconColor = 'gray' | 'blue' | 'red' | 'orange' | 'green' | 'purple' | 'light-blue';
 
 interface StatCardProps {
   icon: React.ReactNode;
@@ -18,11 +18,12 @@ interface StatCardProps {
 
 const colorVariants: Record<IconColor, string> = {
   gray: 'bg-gray-200 text-gray-600',
-  blue: 'bg-blue-100 text-stat-blue',
-  red: 'bg-red-100 text-stat-red',
-  orange: 'bg-orange-100 text-stat-orange',
-  green: 'bg-green-100 text-stat-green',
-  purple: 'bg-purple-100 text-stat-purple'
+  blue: 'stat-icon-blue',
+  red: 'bg-[#FF3B30] text-white',
+  orange: 'stat-icon-orange',
+  green: 'stat-icon-green',
+  purple: 'stat-icon-purple',
+  'light-blue': 'bg-[#33C7FF] text-white'
 };
 
 const StatCard: React.FC<StatCardProps> = ({
@@ -35,12 +36,12 @@ const StatCard: React.FC<StatCardProps> = ({
 }) => {
   return (
     <div className={cn(
-      'stats-card bg-white rounded-lg p-6 shadow-sm animate-slide-up',
+      'stats-card p-6 animate-slide-up',
       className
     )}>
       <div className="flex items-start justify-between">
         <div className={cn(
-          'icon-container w-12 h-12 rounded-full flex items-center justify-center mb-4',
+          'stat-icon-container',
           colorVariants[iconColor]
         )}>
           {icon}
@@ -48,7 +49,7 @@ const StatCard: React.FC<StatCardProps> = ({
         {trend && (
           <div className={cn(
             'text-sm font-medium flex items-center space-x-1',
-            trend.positive ? 'text-success' : 'text-danger'
+            trend.positive ? 'trend-up' : 'trend-down'
           )}>
             {trend.positive ? (
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -65,7 +66,7 @@ const StatCard: React.FC<StatCardProps> = ({
           </div>
         )}
       </div>
-      <div className="space-y-1">
+      <div className="space-y-1 mt-4">
         <h3 className="text-sm font-medium text-gray-500">{title}</h3>
         <p className="text-2xl font-bold text-gray-900">{value}</p>
       </div>
